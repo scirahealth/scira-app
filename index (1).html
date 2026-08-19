@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SciRA® — Hormonal Assessment</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#3A1230">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plum:#3A1230; --plum-deep:#2A0D23; --cream:#FAF5EC; --cream-dim:#F2EBDD;
+    --teal:#2F6F6B; --gold:#C9A24C; --mauve:#B26D82; --mauve-dim:#F0DEE3;
+    --ink:#2A1B26; --ink-soft:#5C4A56; --line:rgba(42,27,38,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:'Inter',sans-serif; background:var(--cream); color:var(--ink);
+    -webkit-font-smoothing:antialiased; overscroll-behavior:none;
+    padding-top:env(safe-area-inset-top); padding-bottom:env(safe-area-inset-bottom);
+  }
+  h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+  .screen{display:none; min-height:100vh; flex-direction:column;}
+  .screen.active{display:flex;}
+  .app{max-width:520px; margin:0 auto; width:100%; min-height:100vh; display:flex; flex-direction:column; position:relative;}
+
+  /* ---- Story intro (micro-storytelling) ---- */
+  .story-screen{
+    flex:1; display:flex; flex-direction:column; justify-content:center; padding:40px 30px;
+    background:var(--plum); color:var(--cream); text-align:center; position:relative; min-height:100vh;
+  }
+  .story-dots{position:absolute; top:calc(22px + env(safe-area-inset-top)); left:0; right:0; display:flex; justify-content:center; gap:7px;}
+  .story-dots span{width:20px; height:3px; border-radius:4px; background:rgba(250,245,236,0.2); transition:background .3s;}
+  .story-dots span.on{background:var(--gold);}
+  .story-skip{position:absolute; top:calc(20px + env(safe-area-inset-top)); right:20px; background:none; border:none; color:rgba(250,245,236,0.5); font-size:13px; cursor:pointer; font-family:'Inter',sans-serif;}
+  .story-lines{display:flex; flex-direction:column; gap:6px; margin-bottom:38px;}
+  .story-lines p{
+    font-family:'Fraunces',serif; font-size:22px; line-height:1.4; font-weight:500; margin:0;
+    opacity:0; transform:translateY(8px); animation:storyIn .6s ease forwards;
+  }
+  .story-lines p.soft{font-family:'Inter',sans-serif; font-size:14.5px; font-weight:400; color:rgba(250,245,236,0.6); margin-top:8px;}
+  @keyframes storyIn{ to{opacity:1; transform:translateY(0);} }
+  .story-question{
+    font-family:'Fraunces',serif; font-style:italic; font-size:16px; color:var(--gold);
+    opacity:0; transform:translateY(8px); animation:storyIn .6s ease forwards; margin:0 0 34px;
+  }
+  .badge{width:56px; height:56px; border-radius:50%; background:rgba(250,245,236,0.1); border:1px solid rgba(250,245,236,0.25); margin:0 auto 30px; display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:23px; color:var(--gold); font-weight:600;}
+  .meta-row{display:flex; justify-content:center; gap:22px; font-size:12.5px; color:rgba(250,245,236,0.55); margin-bottom:20px; flex-wrap:wrap;}
+  .btn{
+    background:var(--gold); color:var(--plum-deep); border:none; font-weight:700; font-size:15.5px;
+    padding:16px 20px; border-radius:100px; cursor:pointer; width:100%; transition:transform .15s, opacity .15s;
+  }
+  .btn:active{transform:scale(0.98);}
+  .btn.ghost{background:transparent; border:1.5px solid rgba(250,245,236,0.4); color:var(--cream); margin-top:12px;}
+  .disclaimer-small{font-size:11.5px; color:rgba(250,245,236,0.45); margin-top:22px; line-height:1.5;}
+  .our-story-link{background:none; border:none; color:rgba(250,245,236,0.55); font-size:12.5px; text-decoration:underline; text-underline-offset:3px; margin-top:26px; cursor:pointer; font-family:'Inter',sans-serif;}
+
+  /* ---- Founder story modal ---- */
+  .modal-overlay{position:fixed; inset:0; background:rgba(20,7,17,0.7); z-index:50; display:none; align-items:flex-end; justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal-sheet{
+    background:var(--cream); color:var(--ink); width:100%; max-width:520px; border-radius:24px 24px 0 0;
+    padding:30px 26px calc(30px + env(safe-area-inset-bottom)); max-height:82vh; overflow-y:auto;
+  }
+  .modal-sheet .cap{font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:10px;}
+  .modal-sheet h3{font-family:'Fraunces',serif; font-size:21px; color:var(--plum); margin:0 0 14px; line-height:1.35;}
+  .modal-sheet p{font-size:14.5px; line-height:1.7; color:var(--ink-soft); margin:0 0 14px;}
+  .modal-sheet .founder-name{font-weight:700; color:var(--plum);}
+  .modal-close{margin-top:8px;}
+
+  /* ---- Quiz ---- */
+  #quiz{background:var(--cream);}
+  .topbar{padding:16px 20px 12px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--line); background:var(--cream); position:sticky; top:0; z-index:5;}
+  .back-btn{background:none; border:none; font-size:20px; color:var(--plum); cursor:pointer; padding:4px 8px; line-height:1;}
+  .progress-track{flex:1; height:5px; background:var(--line); border-radius:10px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--gold); border-radius:10px; transition:width .35s ease;}
+  .step-count{font-size:12px; color:var(--ink-soft); font-weight:600; white-space:nowrap;}
+  .quiz-body{flex:1; padding:28px 22px 130px; overflow-y:auto;}
+  .step-eyebrow{font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:10px;}
+  .q-block{margin-bottom:30px;}
+  .q-text{font-family:'Fraunces',serif; font-size:19px; font-weight:600; color:var(--plum); line-height:1.35; margin:0 0 16px;}
+  .options{display:flex; flex-direction:column; gap:10px;}
+  .opt{
+    border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:15px 16px;
+    font-size:14.5px; font-weight:500; color:var(--ink); cursor:pointer; text-align:left;
+    transition:border-color .15s, background .15s;
+    display:flex; align-items:center; gap:12px;
+  }
+  .opt .dot{width:18px; height:18px; border-radius:50%; border:1.5px solid var(--line); flex-shrink:0; position:relative;}
+  .opt.selected{border-color:var(--plum); background:var(--mauve-dim);}
+  .opt.selected .dot{border-color:var(--plum); background:var(--plum);}
+  .opt.selected .dot::after{content:''; position:absolute; inset:4px; background:var(--gold); border-radius:50%;}
+  .footer-nav{position:fixed; bottom:0; left:0; right:0; background:var(--cream); border-top:1px solid var(--line); padding:14px 22px calc(14px + env(safe-area-inset-bottom));}
+  .footer-nav .app-wrap{max-width:520px; margin:0 auto;}
+  .btn.dark{background:var(--plum); color:var(--cream);}
+  .btn:disabled{opacity:0.35; pointer-events:none;}
+
+  /* ---- Dashboard ---- */
+  #dashboard{background:var(--cream);}
+  .dash-hero{background:var(--plum); color:var(--cream); padding:36px 24px 30px; text-align:center; border-radius:0 0 28px 28px;}
+  .dash-hero .cap{font-size:11.5px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); font-weight:700; margin-bottom:8px;}
+  .score-ring{width:140px; height:140px; margin:14px auto 10px; position:relative;}
+  .score-ring svg{transform:rotate(-90deg);}
+  .score-ring .num{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; flex-direction:column;}
+  .score-ring .num .n{font-family:'Fraunces',serif; font-size:38px; font-weight:600;}
+  .score-ring .num .l{font-size:10.5px; color:rgba(250,245,236,0.6); text-transform:uppercase; letter-spacing:0.08em;}
+  .dash-hero p{font-size:13.5px; color:rgba(250,245,236,0.72); max-width:340px; margin:6px auto 0; line-height:1.55;}
+  .dash-body{padding:26px 20px 60px;}
+  .metric-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;}
+  .metric-card{background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 16px;}
+  .metric-card .m-lbl{font-size:12px; color:var(--ink-soft); margin-bottom:8px; font-weight:600;}
+  .metric-card .m-val{font-family:'Fraunces',serif; font-size:24px; font-weight:600; color:var(--plum);}
+  .tag{display:inline-block; margin-top:8px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px;}
+  .tag.good{background:var(--teal); color:#fff;}
+  .tag.moderate{background:var(--gold); color:var(--plum-deep);}
+  .tag.attention{background:var(--mauve); color:#fff;}
+  .priority-note{background:var(--cream-dim); border-radius:16px; padding:18px; font-size:13.5px; color:var(--ink-soft); line-height:1.6; margin-bottom:24px;}
+  .priority-note strong{color:var(--plum);}
+  .cta-final{background:var(--gold); border-radius:18px; padding:22px; text-align:center; margin-bottom:14px;}
+  .cta-final h3{font-size:16px; color:var(--plum-deep); margin:0 0 8px; font-weight:700;}
+  .cta-final p{font-size:13px; color:var(--plum-deep); opacity:0.85; margin:0 0 16px; line-height:1.5;}
+  .foot-disc{font-size:11px; color:var(--ink-soft); text-align:center; line-height:1.6; margin-top:10px;}
+
+  @media (min-width:600px){
+    body{background:var(--cream-dim);}
+    .app{box-shadow:0 20px 60px rgba(42,27,38,0.12); min-height:100vh;}
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- STORY 1 -->
+  <section id="story1" class="screen active">
+    <div class="story-screen">
+      <button class="story-skip" onclick="startQuiz()">Skip</button>
+      <div class="story-dots"><span class="on"></span><span></span><span></span></div>
+      <div class="badge">S</div>
+      <div class="story-lines" id="story1Lines"></div>
+      <button class="btn" onclick="goStory(2)">Begin your assessment →</button>
+      <button class="our-story-link" onclick="openStoryModal()">The story behind SciRA</button>
+    </div>
+  </section>
+
+  <!-- STORY 2 -->
+  <section id="story2" class="screen">
+    <div class="story-screen">
+      <button class="story-skip" onclick="startQuiz()">Skip</button>
+      <div class="story-dots"><span></span><span class="on"></span><span></span></div>
+      <div class="story-lines" id="story2Lines"></div>
+      <p class="story-question" id="story2Question">Sound familiar?</p>
+      <button class="btn" onclick="goStory(3)">Yes, let's explore →</button>
+    </div>
+  </section>
+
+  <!-- STORY 3 -->
+  <section id="story3" class="screen">
+    <div class="story-screen">
+      <button class="story-skip" onclick="startQuiz()">Skip</button>
+      <div class="story-dots"><span></span><span></span><span class="on"></span></div>
+      <div class="story-lines" id="story3Lines"></div>
+      <div class="meta-row" style="margin-top:6px;"><span>~4 min</span><span>·</span><span>8 steps</span><span>·</span><span>Non-diagnostic</span></div>
+      <button class="btn" onclick="startQuiz()">Let's begin →</button>
+      <p class="disclaimer-small">Educational wellness tool. Not a diagnosis or a substitute for medical advice.</p>
+    </div>
+  </section>
+
+  <!-- FOUNDER STORY MODAL -->
+  <div class="modal-overlay" id="storyModal">
+    <div class="modal-sheet">
+      <div class="cap">The Story Behind SciRA</div>
+      <h3>She was never meant to move through this alone.</h3>
+      <p>It began in Dehradun, with natural healing — and deepened on a pilgrimage to Badrinath, where a curiosity about what the earth could do for the body turned into two decades of formulation, research and listening to women.</p>
+      <p><span class="founder-name">Nandita Sharma</span>, Founder — 25+ years in women's wellness, founder of Amè Organic, a clinically studied neurocosmetics brand.</p>
+      <p>SciRA is what happens when that listening finally meets clinical rigour — real evidence, and the dignity of being believed.</p>
+      <button class="btn ghost" style="color:var(--plum); border-color:var(--line);" onclick="closeStoryModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <section id="quiz" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="prevStep()" aria-label="back">←</button>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="step-count" id="stepCount">Step 1 / 8</div>
+    </div>
+    <div class="quiz-body" id="quizBody"></div>
+    <div class="footer-nav">
+      <div class="app-wrap">
+        <button class="btn dark" id="nextBtn" onclick="nextStep()" disabled>Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="screen">
+    <div class="dash-hero">
+      <div class="cap">Your Hormonal Wellness</div>
+      <div class="score-ring">
+        <svg width="140" height="140">
+          <circle cx="70" cy="70" r="60" stroke="rgba(250,245,236,0.15)" stroke-width="10" fill="none"/>
+          <circle id="scoreArc" cx="70" cy="70" r="60" stroke="#C9A24C" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="377" stroke-dashoffset="377"/>
+        </svg>
+        <div class="num"><div class="n" id="overallScore">–</div><div class="l">Overall Score</div></div>
+      </div>
+      <p id="overallSummary">Your personalised hormonal intelligence report.</p>
+    </div>
+    <div class="dash-body">
+      <div class="metric-grid" id="metricGrid"></div>
+      <div class="priority-note" id="priorityNote"></div>
+      <div class="cta-final">
+        <h3>Want a clinician-reviewed follow-up?</h3>
+        <p>This prototype gives directional insight only. Take the full SciRA assessment for a detailed, clinician-reviewable report.</p>
+        <a class="btn" style="display:block; text-decoration:none;" href="https://form.jotform.com/262263768559068" target="_blank" rel="noopener">Open Full Assessment</a>
+      </div>
+      <button class="btn ghost" style="color:var(--plum); border-color:var(--line);" onclick="restart()">Retake Assessment</button>
+      <p class="foot-disc">SciRA® is a non-diagnostic health-intelligence tool. It does not replace professional medical advice, diagnosis or treatment.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ---------------- Data model ---------------- */
+const FREQ = ["Rarely","Sometimes","Often","Most days"];
+const SEV  = ["None","Mild","Moderate","Marked"];
+const FREQ_SCORE = {Rarely:95, Sometimes:70, Often:40, "Most days":15};
+const SEV_SCORE  = {None:95, Mild:70, Moderate:40, Marked:15};
+
+const STEPS = [
+  { key:"about", eyebrow:"Step 01 · About You", questions:[
+    { id:"age", text:"Which age range are you in?", options:["Under 30","30–39","40–47","48–55","56+"] },
+    { id:"cycle", text:"How would you describe your cycle right now?", options:["Regular","Irregular","Infrequent","Stopped in the last year","Stopped over a year ago"] }
+  ]},
+  { key:"energy", eyebrow:"Step 02 · Energy & Sleep", questions:[
+    { id:"tired", text:"How often does tiredness linger after a full night's rest?", options:FREQ },
+    { id:"sleep", text:"How settled is your sleep?", options:["Settled","Occasional waking","Frequent waking","Broken most nights"] }
+  ]},
+  { key:"mood", eyebrow:"Step 03 · Mind & Mood", questions:[
+    { id:"concentration", text:"Do you notice trouble concentrating or recalling words?", options:FREQ },
+    { id:"irritability", text:"Have you felt irritability or anxiety that feels out of character?", options:FREQ }
+  ]},
+  { key:"body", eyebrow:"Step 04 · Body Signals", questions:[
+    { id:"weight", text:"Have you seen weight shifts despite unchanged habits?", options:["No change","Slight change","Noticeable change","Significant change"] },
+    { id:"skinhairjoint", text:"Any changes in skin, hair or joints?", options:SEV }
+  ]},
+  { key:"skin", eyebrow:"Step 05 · Skin & Pigmentation", questions:[
+    { id:"pigmentation", text:"Have you noticed darkening or patchy pigmentation (cheeks, upper lip, neck)?", options:SEV },
+    { id:"dryness", text:"How is your skin's dryness, thinning or itchiness compared with a year ago?", options:SEV },
+    { id:"acne", text:"Any adult acne, jawline breakouts or coarse facial hair?", options:SEV,
+      show:(a)=> stage(a)==="pre" || stage(a)==="peri" },
+    { id:"sunworsen", text:"Does the pigmentation worsen with sun exposure or heat?", options:FREQ,
+      show:(a)=> a.pigmentation && a.pigmentation!=="None" }
+  ]},
+  { key:"joints", eyebrow:"Step 06 · Joints & Muscles", questions:[
+    { id:"joint", text:"How often do you feel joint aches, stiffness or muscle soreness?", options:FREQ },
+    { id:"stiffness", text:"How marked is stiffness in the first 30 minutes after waking?", options:SEV,
+      show:(a)=> a.joint && a.joint!=="Rarely" },
+    { id:"bone", text:"Since periods stopped, have you had a fracture, height loss or been advised about bone density?", options:SEV,
+      show:(a)=> stage(a)==="late-peri" || stage(a)==="post" }
+  ]},
+  { key:"hotflash", eyebrow:"Step 07 · Hot Flashes & Temperature", questions:[
+    { id:"flash", text:"How often do you get sudden waves of heat or flushing?", options:FREQ },
+    { id:"night", text:"How often do night sweats disturb your sleep?", options:FREQ },
+    { id:"disrupt", text:"When they happen, how disruptive are they to your day?", options:SEV,
+      show:(a)=> (a.flash && a.flash!=="Rarely") || (a.night && a.night!=="Rarely") },
+    { id:"cluster", text:"Do the flashes cluster in the days before your period?", options:FREQ,
+      show:(a)=> stage(a)==="pre" || stage(a)==="peri" }
+  ]},
+  { key:"priority", eyebrow:"Step 08 · What Matters To You", questions:[
+    { id:"priority", text:"What would you most like clarity on?", options:[
+      "Energy and sleep","Mood and focus","Metabolism and weight","Skin and pigmentation",
+      "Joint and bone comfort","Hot flashes and temperature","Long-term bone & heart health"
+    ]}
+  ]}
+];
+
+function stage(a){
+  switch(a.cycle){
+    case "Regular": return "pre";
+    case "Irregular": return "peri";
+    case "Infrequent": return "late-peri";
+    case "Stopped in the last year": return "late-peri";
+    case "Stopped over a year ago": return "post";
+    default: return "unknown";
+  }
+}
+
+let answers = {};
+let stepIndex = 0;
+
+/* ---------------- Micro-storytelling intro ---------------- */
+const STORY = {
+  story1: ["Something changed.","Maybe your sleep.","Your mood.","Your periods.","Your skin.","You thought they were separate.","Maybe they aren't."],
+  story2: ["Meet a woman like you.","She started waking up at 3 AM.","Then came fatigue.","Then brain fog.","Then unexplained changes in her body.","She kept treating each one separately."],
+  story3: ["Your body leaves clues.","SciRA helps connect them.","Sleep → mood → stress → cycle → metabolism → skin → joints","Not a diagnosis.","A clearer picture."]
+};
+function renderStoryLines(containerId, lines, startDelay){
+  const c = document.getElementById(containerId);
+  c.innerHTML = '';
+  lines.forEach((line, i)=>{
+    const p = document.createElement('p');
+    p.textContent = line;
+    p.style.animationDelay = (startDelay + i*0.22) + 's';
+    c.appendChild(p);
+  });
+  return startDelay + lines.length*0.22;
+}
+function goStory(n){
+  show('story'+n);
+  if(n===2){
+    const end = renderStoryLines('story2Lines', STORY.story2, 0.05);
+    document.getElementById('story2Question').style.animationDelay = end + 's';
+  }
+  if(n===3){
+    renderStoryLines('story3Lines', STORY.story3, 0.05);
+  }
+}
+function openStoryModal(){ document.getElementById('storyModal').classList.add('open'); }
+function closeStoryModal(){ document.getElementById('storyModal').classList.remove('open'); }
+window.addEventListener('DOMContentLoaded', ()=>{
+  renderStoryLines('story1Lines', STORY.story1, 0.05);
+});
+
+/* ---------------- Navigation ---------------- */
+function startQuiz(){
+  show('quiz');
+  stepIndex = 0;
+  renderStep();
+}
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function visibleQuestions(step){
+  return step.questions.filter(q => !q.show || q.show(answers));
+}
+function stepComplete(step){
+  return visibleQuestions(step).every(q => answers[q.id]);
+}
+function renderStep(){
+  const step = STEPS[stepIndex];
+  const body = document.getElementById('quizBody');
+  body.innerHTML = `<div class="step-eyebrow">${step.eyebrow}</div>`;
+  visibleQuestions(step).forEach(q=>{
+    const block = document.createElement('div');
+    block.className = 'q-block';
+    block.innerHTML = `<p class="q-text">${q.text}</p><div class="options" data-qid="${q.id}"></div>`;
+    const optWrap = block.querySelector('.options');
+    q.options.forEach(opt=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt' + (answers[q.id]===opt ? ' selected' : '');
+      b.innerHTML = `<span class="dot"></span>${opt}`;
+      b.onclick = ()=> selectOption(q.id, opt);
+      optWrap.appendChild(b);
+    });
+    body.appendChild(block);
+  });
+  document.getElementById('stepCount').textContent = `Step ${stepIndex+1} / ${STEPS.length}`;
+  document.getElementById('progressFill').style.width = `${((stepIndex)/(STEPS.length-1))*100}%`;
+  document.getElementById('nextBtn').textContent = stepIndex === STEPS.length-1 ? 'See My Results' : 'Continue';
+  updateNextState();
+  document.getElementById('quizBody').scrollTop = 0;
+}
+function selectOption(qid, opt){
+  answers[qid] = opt;
+  // clear downstream conditional answers that may no longer apply
+  renderStep();
+  updateNextState();
+}
+function updateNextState(){
+  document.getElementById('nextBtn').disabled = !stepComplete(STEPS[stepIndex]);
+}
+function nextStep(){
+  if(!stepComplete(STEPS[stepIndex])) return;
+  if(stepIndex === STEPS.length - 1){
+    computeAndShowResults();
+    return;
+  }
+  stepIndex++;
+  renderStep();
+}
+function prevStep(){
+  if(stepIndex === 0){ show('story3'); return; }
+  stepIndex--;
+  renderStep();
+}
+function restart(){
+  answers = {}; stepIndex = 0;
+  localStorage.removeItem('scira_last_result');
+  show('story1');
+}
+
+/* ---------------- Scoring ---------------- */
+function avg(nums){ return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : null; }
+
+function computeDomains(){
+  const d = {};
+  d.sleep = avg([FREQ_SCORE[answers.tired], {Settled:95,"Occasional waking":75,"Frequent waking":45,"Broken most nights":15}[answers.sleep]]);
+  d.mood = avg([FREQ_SCORE[answers.concentration], FREQ_SCORE[answers.irritability]]);
+  d.metabolism = {"No change":95,"Slight change":75,"Noticeable change":50,"Significant change":25}[answers.weight];
+  const skinVals = [SEV_SCORE[answers.pigmentation], SEV_SCORE[answers.dryness]];
+  if(answers.acne) skinVals.push(SEV_SCORE[answers.acne]);
+  d.skin = avg(skinVals);
+  const jointVals = [FREQ_SCORE[answers.joint]];
+  if(answers.stiffness) jointVals.push(SEV_SCORE[answers.stiffness]);
+  if(answers.bone) jointVals.push(SEV_SCORE[answers.bone]);
+  d.joints = avg(jointVals);
+  const flashVals = [FREQ_SCORE[answers.flash], FREQ_SCORE[answers.night]];
+  if(answers.disrupt) flashVals.push(SEV_SCORE[answers.disrupt]);
+  d.hotflash = avg(flashVals);
+  return d;
+}
+function tagFor(score){
+  if(score>=80) return {c:'good', l:'Good'};
+  if(score>=55) return {c:'moderate', l:'Moderate'};
+  return {c:'attention', l:'Needs attention'};
+}
+function ageMidpoint(range){
+  return {"Under 30":27,"30–39":35,"40–47":44,"48–55":52,"56+":60}[range] || 45;
+}
+
+function computeAndShowResults(){
+  const domains = computeDomains();
+  const vals = Object.values(domains).filter(v=>v!==null && v!==undefined);
+  const overall = Math.round(avg(vals));
+  const baseAge = ageMidpoint(answers.age);
+  const hormonalAge = baseAge + Math.round((100-overall)/100*8);
+
+  document.getElementById('overallScore').textContent = overall;
+  const circumference = 2*Math.PI*60;
+  const arc = document.getElementById('scoreArc');
+  arc.setAttribute('stroke-dasharray', circumference);
+  arc.style.transition = 'stroke-dashoffset 1s ease';
+  requestAnimationFrame(()=>{ arc.setAttribute('stroke-dashoffset', circumference - (overall/100)*circumference); });
+
+  const summaryTxt = overall>=80
+    ? "Balanced, with strong signals across most tracked domains."
+    : overall>=55
+    ? "Balanced with some opportunities to improve — a few domains worth attention."
+    : "Several domains showing marked signals — worth a clinician conversation.";
+  document.getElementById('overallSummary').textContent = summaryTxt;
+
+  const cards = [
+    {key:'sleep', label:'Sleep Health', val:domains.sleep, fmt:v=>Math.round(v)+'%'},
+    {key:'mood', label:'Mood & Focus', val:domains.mood, fmt:v=>Math.round(v)+'/100'},
+    {key:'metabolism', label:'Metabolism', val:domains.metabolism, fmt:v=>Math.round(v)+'%'},
+    {key:'skin', label:'Skin Health', val:domains.skin, fmt:v=>Math.round(v)+'%'},
+    {key:'joints', label:'Joint & Bone', val:domains.joints, fmt:v=>Math.round(v)+'%'},
+    {key:'hotflash', label:'Temperature', val:domains.hotflash, fmt:v=>Math.round(v)+'%'},
+  ].filter(c=>c.val!==null && c.val!==undefined);
+
+  cards.unshift({key:'age', label:'Hormonal Age', val:null, custom:`${hormonalAge} yrs`, note:`Chronological: ${answers.age}`});
+
+  // reorder: bring the domain matching stated priority to front (after hormonal age)
+  const priorityMap = {
+    "Energy and sleep":"sleep","Mood and focus":"mood","Metabolism and weight":"metabolism",
+    "Skin and pigmentation":"skin","Joint and bone comfort":"joints","Hot flashes and temperature":"hotflash",
+    "Long-term bone & heart health":"joints"
+  };
+  const priorityKey = priorityMap[answers.priority];
+  cards.sort((a,b)=>{
+    if(a.key==='age') return -1; if(b.key==='age') return 1;
+    if(a.key===priorityKey) return -1; if(b.key===priorityKey) return 1;
+    return 0;
+  });
+
+  const grid = document.getElementById('metricGrid');
+  grid.innerHTML = '';
+  cards.forEach(c=>{
+    const card = document.createElement('div');
+    card.className = 'metric-card';
+    if(c.key==='age'){
+      card.innerHTML = `<div class="m-lbl">${c.label}</div><div class="m-val">${c.custom}</div><div class="tag moderate">${c.note}</div>`;
+    } else {
+      const t = tagFor(c.val);
+      card.innerHTML = `<div class="m-lbl">${c.label}</div><div class="m-val">${c.fmt(c.val)}</div><div class="tag ${t.c}">${t.l}</div>`;
+    }
+    grid.appendChild(card);
+  });
+
+  document.getElementById('priorityNote').innerHTML =
+    `<strong>You told us:</strong> ${answers.priority} matters most to you right now — so we've placed that first. Every reassessment builds a longitudinal picture over time, the way the full SciRA platform is designed to work.`;
+
+  localStorage.setItem('scira_last_result', JSON.stringify({answers, domains, overall, ts:Date.now()}));
+  show('dashboard');
+}
+
+/* ---------------- PWA install ---------------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
